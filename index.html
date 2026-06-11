@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Identificador de Fungos</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: sans-serif;
+      background: #0f1a0f;
+      color: #e8f5e9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+    h1 { font-size: 1.8rem; margin-bottom: 8px; color: #a5d6a7; }
+    p.sub { color: #81c784; margin-bottom: 32px; font-size: 0.95rem; }
+    .upload-area {
+      border: 2px dashed #388e3c;
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+      cursor: pointer;
+      width: 100%;
+      max-width: 480px;
+      transition: background 0.2s;
+    }
+    .upload-area:hover { background: #1b2e1b; }
+    #preview {
+      max-width: 480px;
+      max-height: 320px;
+      border-radius: 10px;
+      margin: 20px 0;
+      display: none;
+    }
+    button {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 12px;
+      display: none;
+    }
+    button:hover { background: #388e3c; }
+    button:disabled { background: #555; cursor: not-allowed; }
+    #resultado {
+      margin-top: 32px;
+      background: #1b2e1b;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 480px;
+      width: 100%;
+      display: none;
+    }
+    .label { font-size: 0.75rem; color: #81c784; text-transform: uppercase; margin-bottom: 2px; }
+    .valor { font-size: 1.1rem; margin-bottom: 16px; }
+    .confianca-alta { color: #69f0ae; }
+    .confianca-média { color: #ffd740; }
+    .confianca-baixa { color: #ff5252; }
+    .aviso {
+      background: #3e2723;
+      border-left: 4px solid #ff7043;
+      padding: 10px 14px;
+      border-radius: 4px;
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+    #loading { display: none; margin-top: 20px; color: #81c784; }
+  </style>
+</head>
+<body>
+  <h1>🍄 Identificador de Fungos</h1>
+  <p class="sub">Envie uma foto e a IA identifica o fungo para você</p>
+
+  <div class="upload-area" onclick="document.getElementById('input').click()">
+    <p>📷 Clique aqui para escolher uma imagem</p>
+    <p style="font-size:0.8rem; color:#66bb6a; margin-top:6px">JPG ou PNG</p>
+    <input type="file" id="input" accept="image/*" style="display:none" onchange="mostrarPreview(this)">
+  </div>
+
+  <img id="preview" alt="Preview">
+  <button id="btn" onclick="identificar()">Identificar Fungo</button>
+  <p id="loading">⏳ Analisando imagem...</p>
+
+  <div id="resultado">
+    <div class="label">Nome provável</div>
+    <div class="valor" id="r-nome"></div>
+    <div class="label">Nível de confiança</div>
+    <div class="valor" id="r-confianca"></div>
+    <div class="label">Descrição</div>
+    <div class="valor" id="r-descricao"></div>
+    <div class="label">Alternativas possíveis</div>
+    <div class="valor" id="r-alternativas"></div>
+    <div id="r-aviso"></div>
+  </div>
+
+  <script>
+    const API_URL = "https://fungo-api-ns3.onrender.com";
+
+    function mostrarPreview(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const preview = document.getElementById('preview');
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+      document.getElementById('btn').style.display = 'inline-block';
+      document.getElementById('resultado').style.display = 'none';
+    }
+
+    async function identificar() {
+      const input = document.getElementById('input');
+      const file = input.files[0];
+      if (!file) return;
+      const btn = document.getElementById('btn');
+      const loading = document.getElementById('loading');
+      btn.disabled = true;
+      loading.style.display = 'block';
+      document.getElementById('resultado').style.display = 'none';
+      const formData = new FormData();
+      formData.append('imagem', file);
+      try {
+        const resp = await fetch(`${API_URL}/identificar`, { method: 'POST', body: formData });
+        const dados = await resp.json();
+        mostrarResultado(dados);
+      } catch (err) {
+        alert('Erro ao conectar com a API.');
+        console.error(err);
+      } finally {
+        btn.disabled = false;
+        loading.style.display = 'none';
+      }
+    }
+
+    function mostrarResultado(d) {
+      document.getElementById('r-nome').textContent = d.nome_provavel || '—';
+      const conf = document.getElementById('r-confianca');
+      conf.textContent = d.confianca || '—';
+      conf.className = `valor confianca-${d.confianca}`;
+      document.getElementById('r-descricao').textContent = d.descricao_curta || '—';
+      const alt = d.alternativas?.length > 0 ? d.alternativas.join(', ') : 'Nenhuma';
+      document.getElementById('r-alternativas').textContent = alt;
+      const avisoEl = document.getElementById('r-aviso');
+      avisoEl.innerHTML = d.aviso ? `<div class="aviso">⚠️ ${d.aviso}</div>` : '';
+      document.getElementById('resultado').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
