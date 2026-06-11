@@ -25,43 +25,169 @@
       text-align: center;
       cursor: pointer;
       width: 100%;
-      max-width: 480px;
+      max-width: 560px;
+      transition: background 0.2s;
     }
-    #preview { max-width: 480px; max-height: 320px; border-radius: 10px; margin: 20px 0; display: none; }
-    button { background: #2e7d32; color: white; border: none; padding: 12px 32px; border-radius: 8px; font-size: 1rem; cursor: pointer; margin-top: 12px; display: none; }
+    .upload-area:hover { background: #1b2e1b; }
+    #preview { max-width: 560px; max-height: 360px; border-radius: 10px; margin: 20px 0; display: none; }
+    button {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 12px;
+      display: none;
+    }
+    button:hover { background: #388e3c; }
     button:disabled { background: #555; cursor: not-allowed; }
-    #resultado { margin-top: 32px; background: #1b2e1b; border-radius: 12px; padding: 24px; max-width: 480px; width: 100%; display: none; }
-    .label { font-size: 0.75rem; color: #81c784; text-transform: uppercase; margin-bottom: 2px; }
-    .valor { font-size: 1.1rem; margin-bottom: 16px; }
-    .confianca-alta { color: #69f0ae; }
-    .confianca-média { color: #ffd740; }
-    .confianca-baixa { color: #ff5252; }
-    .aviso { background: #3e2723; border-left: 4px solid #ff7043; padding: 10px 14px; border-radius: 4px; margin-top: 8px; font-size: 0.9rem; }
-    #loading { display: none; margin-top: 20px; color: #81c784; }
+    #loading { display: none; margin-top: 20px; color: #81c784; font-size: 1rem; }
+    #resultado {
+      margin-top: 32px;
+      background: #1b2e1b;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 560px;
+      width: 100%;
+      display: none;
+    }
+    .campo { margin-bottom: 18px; }
+    .label {
+      font-size: 0.7rem;
+      color: #81c784;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    .valor { font-size: 1rem; line-height: 1.5; }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+    .alta { background: #1b5e20; color: #69f0ae; }
+    .media { background: #4a3000; color: #ffd740; }
+    .baixa { background: #4e0000; color: #ff5252; }
+    .contexto-clinico { background: #4a0000; color: #ff8a80; }
+    .contexto-agronomico { background: #1b3a00; color: #b9f6ca; }
+    .contexto-laboratorial { background: #002a3a; color: #80d8ff; }
+    .contexto-natureza { background: #1a2a00; color: #ccff90; }
+    .contexto-inconclusivo { background: #2a2a2a; color: #bdbdbd; }
+    .aviso {
+      background: #3e2723;
+      border-left: 4px solid #ff7043;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-top: 8px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    .aviso-clinico {
+      background: #4a0000;
+      border-left: 4px solid #ff1744;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-top: 8px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      font-weight: bold;
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid #2e4a2e;
+      margin: 16px 0;
+    }
+    .alternativas-lista {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .alt-tag {
+      background: #2e4a2e;
+      color: #a5d6a7;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+    }
   </style>
 </head>
 <body>
   <h1>🍄 Identificador de Fungos</h1>
-  <p class="sub">Envie uma foto e a IA identifica o fungo para você</p>
+  <p class="sub">Análise por IA especializada em micologia clínica e agronômica</p>
+
   <div class="upload-area" onclick="document.getElementById('input').click()">
     <p>📷 Clique aqui para escolher uma imagem</p>
-    <p style="font-size:0.8rem; color:#66bb6a; margin-top:6px">JPG ou PNG</p>
+    <p style="font-size:0.8rem; color:#66bb6a; margin-top:6px">JPG ou PNG — máximo 20 MB</p>
     <input type="file" id="input" accept="image/*" style="display:none" onchange="mostrarPreview(this)">
   </div>
-  <img id="preview" alt="Preview">
-  <button id="btn" onclick="identificar()">Identificar Fungo</button>
-  <p id="loading">⏳ Analisando imagem...</p>
+
+  <img id="preview" alt="Preview da imagem">
+  <button id="btn" onclick="identificar()">🔬 Identificar Fungo</button>
+  <p id="loading">⏳ Analisando imagem com IA especializada...</p>
+
   <div id="resultado">
-    <div class="label">Nome provável</div>
-    <div class="valor" id="r-nome"></div>
-    <div class="label">Nível de confiança</div>
-    <div class="valor" id="r-confianca"></div>
-    <div class="label">Descrição</div>
-    <div class="valor" id="r-descricao"></div>
-    <div class="label">Alternativas possíveis</div>
-    <div class="valor" id="r-alternativas"></div>
+
+    <div class="campo">
+      <div class="label">Nome provável</div>
+      <div class="valor" id="r-nome" style="font-size:1.2rem; font-weight:bold; color:#a5d6a7;"></div>
+    </div>
+
+    <div class="campo">
+      <div class="label">Grupo taxonômico</div>
+      <div class="valor" id="r-grupo"></div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="campo" style="display:flex; gap:16px; flex-wrap:wrap;">
+      <div>
+        <div class="label">Confiança</div>
+        <div id="r-confianca"></div>
+      </div>
+      <div>
+        <div class="label">Contexto</div>
+        <div id="r-contexto"></div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="campo">
+      <div class="label">Descrição</div>
+      <div class="valor" id="r-descricao"></div>
+    </div>
+
+    <div class="campo">
+      <div class="label">Características observadas</div>
+      <div class="valor" id="r-caracteristicas"></div>
+    </div>
+
+    <div class="campo">
+      <div class="label">Importância clínica / agronômica</div>
+      <div class="valor" id="r-importancia"></div>
+    </div>
+
+    <div class="campo">
+      <div class="label">Contexto laboratorial</div>
+      <div class="valor" id="r-laboratorial"></div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="campo">
+      <div class="label">Alternativas possíveis</div>
+      <div class="alternativas-lista" id="r-alternativas"></div>
+    </div>
+
     <div id="r-aviso"></div>
+
   </div>
+
   <script>
     function mostrarPreview(input) {
       const file = input.files[0];
@@ -104,14 +230,41 @@
 
     function mostrarResultado(d) {
       document.getElementById('r-nome').textContent = d.nome_provavel || '—';
-      const conf = document.getElementById('r-confianca');
-      conf.textContent = d.confianca || '—';
-      conf.className = `valor confianca-${d.confianca}`;
+      document.getElementById('r-grupo').textContent = d.grupo_taxonomico || '—';
       document.getElementById('r-descricao').textContent = d.descricao_curta || '—';
-      const alt = d.alternativas?.length > 0 ? d.alternativas.join(', ') : 'Nenhuma';
-      document.getElementById('r-alternativas').textContent = alt;
+      document.getElementById('r-caracteristicas').textContent = d.caracteristicas_observadas || '—';
+      document.getElementById('r-importancia').textContent = d.importancia || '—';
+      document.getElementById('r-laboratorial').textContent = d.contexto_laboratorial || '—';
+
+      const conf = document.getElementById('r-confianca');
+      const confianca = d.confianca || 'baixa';
+      conf.innerHTML = `<span class="badge ${confianca}">${confianca}</span>`;
+
+      const ctx = document.getElementById('r-contexto');
+      const contexto = d.contexto || 'inconclusivo';
+      ctx.innerHTML = `<span class="badge contexto-${contexto}">${contexto}</span>`;
+
+      const altEl = document.getElementById('r-alternativas');
+      altEl.innerHTML = '';
+      if (d.alternativas && d.alternativas.length > 0) {
+        d.alternativas.forEach(a => {
+          const tag = document.createElement('span');
+          tag.className = 'alt-tag';
+          tag.textContent = a;
+          altEl.appendChild(tag);
+        });
+      } else {
+        altEl.innerHTML = '<span style="color:#666">Nenhuma</span>';
+      }
+
       const avisoEl = document.getElementById('r-aviso');
-      avisoEl.innerHTML = d.aviso ? `<div class="aviso">⚠️ ${d.aviso}</div>` : '';
+      if (d.aviso) {
+        const isClinico = d.aviso.includes('ATENCAO') || d.aviso.includes('ATENÇÃO') || d.contexto === 'clinico';
+        avisoEl.innerHTML = `<div class="${isClinico ? 'aviso-clinico' : 'aviso'}">⚠️ ${d.aviso}</div>`;
+      } else {
+        avisoEl.innerHTML = '';
+      }
+
       document.getElementById('resultado').style.display = 'block';
     }
   </script>
