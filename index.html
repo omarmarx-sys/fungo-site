@@ -26,68 +26,31 @@
       cursor: pointer;
       width: 100%;
       max-width: 480px;
-      transition: background 0.2s;
     }
-    .upload-area:hover { background: #1b2e1b; }
-    #preview {
-      max-width: 480px;
-      max-height: 320px;
-      border-radius: 10px;
-      margin: 20px 0;
-      display: none;
-    }
-    button {
-      background: #2e7d32;
-      color: white;
-      border: none;
-      padding: 12px 32px;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-      margin-top: 12px;
-      display: none;
-    }
-    button:hover { background: #388e3c; }
+    #preview { max-width: 480px; max-height: 320px; border-radius: 10px; margin: 20px 0; display: none; }
+    button { background: #2e7d32; color: white; border: none; padding: 12px 32px; border-radius: 8px; font-size: 1rem; cursor: pointer; margin-top: 12px; display: none; }
     button:disabled { background: #555; cursor: not-allowed; }
-    #resultado {
-      margin-top: 32px;
-      background: #1b2e1b;
-      border-radius: 12px;
-      padding: 24px;
-      max-width: 480px;
-      width: 100%;
-      display: none;
-    }
+    #resultado { margin-top: 32px; background: #1b2e1b; border-radius: 12px; padding: 24px; max-width: 480px; width: 100%; display: none; }
     .label { font-size: 0.75rem; color: #81c784; text-transform: uppercase; margin-bottom: 2px; }
     .valor { font-size: 1.1rem; margin-bottom: 16px; }
     .confianca-alta { color: #69f0ae; }
     .confianca-média { color: #ffd740; }
     .confianca-baixa { color: #ff5252; }
-    .aviso {
-      background: #3e2723;
-      border-left: 4px solid #ff7043;
-      padding: 10px 14px;
-      border-radius: 4px;
-      margin-top: 8px;
-      font-size: 0.9rem;
-    }
+    .aviso { background: #3e2723; border-left: 4px solid #ff7043; padding: 10px 14px; border-radius: 4px; margin-top: 8px; font-size: 0.9rem; }
     #loading { display: none; margin-top: 20px; color: #81c784; }
   </style>
 </head>
 <body>
   <h1>🍄 Identificador de Fungos</h1>
   <p class="sub">Envie uma foto e a IA identifica o fungo para você</p>
-
   <div class="upload-area" onclick="document.getElementById('input').click()">
     <p>📷 Clique aqui para escolher uma imagem</p>
     <p style="font-size:0.8rem; color:#66bb6a; margin-top:6px">JPG ou PNG</p>
     <input type="file" id="input" accept="image/*" style="display:none" onchange="mostrarPreview(this)">
   </div>
-
   <img id="preview" alt="Preview">
   <button id="btn" onclick="identificar()">Identificar Fungo</button>
   <p id="loading">⏳ Analisando imagem...</p>
-
   <div id="resultado">
     <div class="label">Nome provável</div>
     <div class="valor" id="r-nome"></div>
@@ -99,10 +62,7 @@
     <div class="valor" id="r-alternativas"></div>
     <div id="r-aviso"></div>
   </div>
-
   <script>
-    const API_URL = "https://fungo-api-ns3.onrender.com";
-
     function mostrarPreview(input) {
       const file = input.files[0];
       if (!file) return;
@@ -113,7 +73,7 @@
       document.getElementById('resultado').style.display = 'none';
     }
 
-    async function identificar() {
+    function identificar() {
       const input = document.getElementById('input');
       const file = input.files[0];
       if (!file) return;
@@ -122,19 +82,27 @@
       btn.disabled = true;
       loading.style.display = 'block';
       document.getElementById('resultado').style.display = 'none';
-      const formData = new FormData();
-      formData.append('imagem', file);
-      try {
-        const resp = await fetch(`${API_URL}/identificar`, { method: 'POST', body: formData });
-        const dados = await resp.json();
-        mostrarResultado(dados);
-      } catch (err) {
-        alert('Erro ao conectar com a API.');
-        console.error(err);
-      } finally {
-        btn.disabled = false;
-        loading.style.display = 'none';
-      }
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const base64 = e.target.result.split(',')[1];
+        try {
+          const resp = await fetch('/api/identificar', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({imagem: base64})
+          });
+          const dados = await resp.json();
+          mostrarResultado(dados);
+        } catch (err) {
+          alert('Erro ao conectar com a API.');
+          console.error(err);
+        } finally {
+          btn.disabled = false;
+          loading.style.display = 'none';
+        }
+      };
+      reader.readAsDataURL(file);
     }
 
     function mostrarResultado(d) {
