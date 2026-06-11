@@ -73,7 +73,7 @@
       document.getElementById('resultado').style.display = 'none';
     }
 
-    function identificar() {
+    async function identificar() {
       const input = document.getElementById('input');
       const file = input.files[0];
       if (!file) return;
@@ -83,26 +83,23 @@
       loading.style.display = 'block';
       document.getElementById('resultado').style.display = 'none';
 
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        const base64 = e.target.result.split(',')[1];
-        try {
-          const resp = await fetch('/api/identificar', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({imagem: base64})
-          });
-          const dados = await resp.json();
-          mostrarResultado(dados);
-        } catch (err) {
-          alert('Erro ao conectar com a API.');
-          console.error(err);
-        } finally {
-          btn.disabled = false;
-          loading.style.display = 'none';
-        }
-      };
-      reader.readAsDataURL(file);
+      const formData = new FormData();
+      formData.append('imagem', file);
+
+      try {
+        const resp = await fetch('https://fungo-api-ns3.onrender.com/identificar', {
+          method: 'POST',
+          body: formData
+        });
+        const dados = await resp.json();
+        mostrarResultado(dados);
+      } catch (err) {
+        alert('Erro ao conectar com a API.');
+        console.error(err);
+      } finally {
+        btn.disabled = false;
+        loading.style.display = 'none';
+      }
     }
 
     function mostrarResultado(d) {
